@@ -13,18 +13,18 @@ import javax.imageio.ImageIO;
 public class ImageSearch {
 
 	// using relative path assuming default assignment folder structure
-	private static final int resultSize = 9; // size of the searching result
+	private static final int resultSize = 20; // size of the searching result
 	private static final String datasetpath = "..\\ImageData\\train\\data"; // training image set													// dataset
 	private static final String groundTruthsPath = "..\\Groundtruth\\train"; // groundtruths																			// file
 	private static final String imageListPath = "..\\ImageList\\train\\TrainImagelist.txt"; // image list																					// file
 	private static final String imageTagsPath = "..\\ImageData\\train\\train_tags.txt"; // image tags																			// tags
 
-	List<ImageData> images;
+	Map<String, ImageData> images;
 
 	ColorHist colorHist = new ColorHist();
 
 	public ImageSearch() {
-		images = new ArrayList<ImageData>();
+		images = new HashMap<String, ImageData>();
 		loadTrainingData();
 	}
 
@@ -60,7 +60,7 @@ public class ImageSearch {
 	// we'll probably want to write a custom ranking function for multiple
 	// search type combinations
 	private List<ImageData> rankColorHistogram() {
-		List<ImageData> results = new ArrayList<ImageData>(images);
+		List<ImageData> results = new ArrayList<ImageData>(images.values());
 		Collections.sort(results, new colorHistogramComparator());
 		return results;
 	}
@@ -73,7 +73,7 @@ public class ImageSearch {
 	}
 
 	private void calculateSimilarities(BufferedImage bi) throws IOException {
-		colorHist.computeSimilarity(images, bi);
+		colorHist.computeSimilarity(new ArrayList<ImageData>(images.values()), bi);
 		// add sift, feature, text similarity calculators here later
 	}
 
@@ -100,7 +100,7 @@ public class ImageSearch {
 					ImageData id = new ImageData(filename,
 							files[count].getPath(), tags.get(filename));
 					id.setCategories(categories.get(filename));
-					images.add(id);
+					images.put(filename, id);
 					
 					double[] colorHistogram = colorHist.getHist(img);
 					id.setColorHistogram(colorHistogram);

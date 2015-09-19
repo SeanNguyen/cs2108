@@ -65,7 +65,8 @@ public class ImageData {
 
 	@Override
 	public String toString() {
-		return String.format("Filename:\n\t%s\nCategories:\n\t%s\n", filename,
-				Arrays.toString(categories.toArray()));
+		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\n", filename,
+				Arrays.toString(categories.toArray()),
+				tags != null ? Arrays.toString(tags.toArray()) : "[]");
 	}
 }

@@ -50,7 +50,7 @@ implements ActionListener {
 
 
 		JPanel imagePanel = new JPanel();
-		imagePanel.setLayout(new GridLayout(0,3));
+		imagePanel.setLayout(new GridLayout(0,5));
 
 		for (int i = 0; i<imageLabels.length;i++){
 			imageLabels[i] = new JLabel();
@@ -58,7 +58,7 @@ implements ActionListener {
 		}
 
 		contentPane = (JPanel)this.getContentPane();
-		setSize(800,900);
+		setSize(1280,900);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		contentPane.add(buttonPanel, BorderLayout.PAGE_START);
