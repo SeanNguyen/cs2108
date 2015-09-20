@@ -9,11 +9,11 @@ public class ColorHist {
 	// at 64 each image consumes 2MB of ram for 12KB image
 	// thats absurd
 	// even at 16 set your VM to -Xmx1024m just in case
-	int dim = 16;
+	private static final int dim = 16;
 
-	public void computeSimilarity(List<ImageData> images,
-			BufferedImage bufferedimage) throws IOException {
-		double[] hist = getHist(bufferedimage);
+	public static void computeSimilarity(List<ImageData> images,
+	        ImageData queryImage) throws IOException {
+		double[] hist = getHist(queryImage);
 
 		for (int count = 0; count < images.size(); count++) {
 			double[] h = images.get(count).getColorHistogram();
@@ -22,7 +22,8 @@ public class ColorHist {
 		}
 	}
 
-	public double[] getHist(BufferedImage image) {
+	public static double[] getHist(ImageData queryImage) throws IOException {
+	    BufferedImage image = queryImage.getImage();
 		int imHeight = image.getHeight();
 		int imWidth = image.getWidth();
 		double[] bins = new double[dim * dim * dim];
@@ -56,12 +57,12 @@ public class ColorHist {
 		return bins;
 	}
 
-	private double computeSimilarity(double[] hist1, double[] hist2) {
+	private static double computeSimilarity(double[] hist1, double[] hist2) {
 		double distance = calculateDistance(hist1, hist2);
 		return 1 - distance;
 	}
 
-	private double calculateDistance(double[] array1, double[] array2) {
+	private static double calculateDistance(double[] array1, double[] array2) {
 		// Euclidean distance
 		/*
 		 * double Sum = 0.0; for(int i = 0; i < array1.length; i++) { Sum = Sum

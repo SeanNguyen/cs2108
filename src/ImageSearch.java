@@ -1,13 +1,11 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
+import java.util.Set;
 
 // seperated the image search logic from the ui
 public class ImageSearch {
@@ -21,7 +19,7 @@ public class ImageSearch {
 
 	Map<String, ImageData> images;
 
-	ColorHist colorHist = new ColorHist();
+	TextFeature textFeature = new TextFeature();
 
 	public ImageSearch() {
 		images = new HashMap<String, ImageData>();
@@ -32,145 +30,113 @@ public class ImageSearch {
 		return resultSize;
 	}
 
-	// we'll probably want to change this to accept multiple combinations
-	public List<ImageData> search(SearchType type, BufferedImage bi)
+	public List<ImageData> search(List<SearchType> searchTypes, ImageData queryImage)
 			throws IOException {
-		calculateSimilarities(bi);
-
-		switch (type) {
-		case COLORHIST:
-			return rankColorHistogram();
-
-		case SIFT:
-			break;
-
-		case FEATURE:
-			break;
-
-		case TEXT:
-			break;
-
-		default:
-			break;
-		}
-		return null;
+		calculateSimilarities(searchTypes, queryImage);
+		List<ImageData> results = rankResults(searchTypes);
+		return results;
 	}
+	
+	// handle calculation of similarity values 
+    private void calculateSimilarities(List<SearchType> searchTypes, ImageData queryImage) throws IOException {
+        for(SearchType searchType: searchTypes) {
+            switch (searchType) {
+                case COLORHIST:
+                    ColorHist.computeSimilarity(new ArrayList<ImageData>(images.values()), queryImage);
+                    break;
+    
+                case SIFT:
+                    break;
+    
+                case FEATURE:
+                    break;
+    
+                case TEXT:
+                    TextFeature.computeSimilarity(images, queryImage.getTags());
+                    break;
+    
+                default:
+                    break;
+            }
+            // add sift, feature, text similarity calculators here later
+        }
+    }
 
-	// for ranking results of color histogram similarity results
-	// we'll probably want to write a custom ranking function for multiple
-	// search type combinations
-	private List<ImageData> rankColorHistogram() {
+	private List<ImageData> rankResults(List<SearchType> searchTypes) {
 		List<ImageData> results = new ArrayList<ImageData>(images.values());
-		Collections.sort(results, new colorHistogramComparator());
+		Collections.sort(results, new imageRankComparator(searchTypes));
 		return results;
 	}
 
-	class colorHistogramComparator implements Comparator<ImageData> {
+	// compare images for sorting using a simple addition of different
+	// similarity weights each for now
+	class imageRankComparator implements Comparator<ImageData> {
+	    
+	    List<SearchType> searchTypes;
+	    
+	    public imageRankComparator(List<SearchType> searchTypes) {
+	        this.searchTypes = searchTypes;
+	    }
+	    
 		public int compare(ImageData a, ImageData b) {
-			return a.getColorSimilarity() > b.getColorSimilarity() ? -1 : a
-					.getColorSimilarity() == b.getColorSimilarity() ? 0 : 1;
+		    
+		    double simA = 0.0;
+		    double simB = 0.0;
+		    
+	        for(SearchType searchType: searchTypes) {
+	            switch (searchType) {
+	                case COLORHIST:
+	                    simA += a.getColorSimilarity();
+	                    simB += b.getColorSimilarity();
+	                    break;
+	    
+	                case SIFT:
+	                    break;
+	    
+	                case FEATURE:
+	                    break;
+	    
+	                case TEXT:
+                        simA += a.getTextSimilarity();
+                        simB += b.getTextSimilarity();
+	                    break;
+	    
+	                default:
+	                    break;
+	            }
+	        }
+			return simA > simB ? -1 : simA == simB ? 0 : 1;
 		}
 	}
 
-	private void calculateSimilarities(BufferedImage bi) throws IOException {
-		colorHist.computeSimilarity(new ArrayList<ImageData>(images.values()), bi);
-		// add sift, feature, text similarity calculators here later
-	}
-
-	// reads all the image files and create imageData object to hold information
-	// about it
-	// for now just preprocess color histogram, and also add the image category
-	// and tags
+	// loading of image data and calculation of color histogram etc
 	private void loadTrainingData() {
-		Map<String, List<String>> tags = getTags();
-		Map<String, List<String>> categories = getCategories();
+		Map<String, Set<String>> tags = Commons.getTags(imageTagsPath);
+		Map<String, Set<String>> categories = Commons.getCategories(imageListPath, groundTruthsPath);
 
 		loadImageData(tags, categories);
 	}
 
-	private void loadImageData(Map<String, List<String>> tags,
-			Map<String, List<String>> categories) {
+	private void loadImageData(Map<String, Set<String>> tags,
+			Map<String, Set<String>> categories) {
 		try {
 			for (File folder : new File(datasetpath).listFiles()) {
 				File dir = new File(folder.getPath());
 				File[] files = dir.listFiles();
 				for (int count = 0; count < files.length; count++) {
-					BufferedImage img = ImageIO.read(files[count]);
 					String filename = files[count].getName();
 					ImageData id = new ImageData(filename,
 							files[count].getPath(), tags.get(filename));
 					id.setCategories(categories.get(filename));
 					images.put(filename, id);
 					
-					double[] colorHistogram = colorHist.getHist(img);
+					// preprocess search features
+					double[] colorHistogram = ColorHist.getHist(id);
 					id.setColorHistogram(colorHistogram);
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private Map<String, List<String>> getCategories() {
-		Map<String, List<String>> imageCategories = new HashMap<String, List<String>>();
-		List<String> imageList = new ArrayList<String>();
-
-		// get keys
-		try (BufferedReader br = new BufferedReader(new FileReader(
-				imageListPath))) {
-			String line = br.readLine();
-
-			while (line != null) {
-				imageList.add(line);
-				imageCategories.put(line, new ArrayList<String>());
-				line = br.readLine();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		// populate tables with categories from ground truths
-
-		for (File groundTruthFile : new File(groundTruthsPath).listFiles()) {
-			try (BufferedReader br = new BufferedReader(new FileReader(
-					groundTruthFile))) {
-				String line = br.readLine();
-
-				String filename = groundTruthFile.getName();
-				String category = filename.substring(filename.indexOf("_") + 1,
-						filename.indexOf("."));
-				int c = 0;
-				while (line != null) {
-					if (line.equals("1")) {
-						imageCategories.get(imageList.get(c)).add(category);
-					}
-					line = br.readLine();
-					c++;
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return imageCategories;
-	}
-
-	private Map<String, List<String>> getTags() {
-		Map<String, List<String>> tags = new HashMap<String, List<String>>();
-
-		try (BufferedReader br = new BufferedReader(new FileReader(
-				imageTagsPath))) {
-			String line = br.readLine();
-
-			while (line != null) {
-				ArrayList<String> tokens = new ArrayList<String>();
-				tokens.addAll(Arrays.asList(line.split("\\s+")));
-				String key = tokens.remove(0);
-				tags.put(key, tokens);
-				line = br.readLine();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return tags;
 	}
 }

@@ -4,13 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,6 +24,7 @@ implements ActionListener {
 	JFileChooser fc;
 	JPanel contentPane;
 
+	JCheckBox color, text, sift, visualConcept;
 	JButton openButton, searchButton;
 	BufferedImage bufferedimage;
 
@@ -30,10 +33,52 @@ implements ActionListener {
 	File file = null;
 
 	ImageSearch is = new ImageSearch();
-
-
+	QueryProcessor qp = new QueryProcessor(is);
+	List<SearchType> searchTypes;
+	
 	public ImageSearchUI() {
-
+	    searchTypes = new ArrayList<SearchType>();
+	    
+	    color = new JCheckBox("Color");
+	    color.addItemListener(new ItemListener() {
+	        public void itemStateChanged(ItemEvent e) {         
+	            if(e.getStateChange() == 1) {
+	                searchTypes.add(SearchType.COLORHIST);
+	            } else {
+	                searchTypes.remove(SearchType.COLORHIST);
+	            }
+        }});
+          
+	    text = new JCheckBox("Text");
+	    text.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {         
+                if(e.getStateChange() == 1) {
+                    searchTypes.add(SearchType.TEXT);
+                } else {
+                    searchTypes.remove(SearchType.TEXT);
+                }
+        }});
+	    sift = new JCheckBox("Sift");
+	    sift.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {         
+                if(e.getStateChange() == 1) {
+                    searchTypes.add(SearchType.SIFT);
+                } else {
+                    searchTypes.remove(SearchType.SIFT);
+                }
+        }});
+       
+	    visualConcept = new JCheckBox("VisualConcept");
+	    visualConcept.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {         
+                if(e.getStateChange() == 1) {
+                    searchTypes.add(SearchType.FEATURE);
+                } else {
+                    searchTypes.remove(SearchType.FEATURE);
+                }
+        }});
+	    
+	    
 		imageLabels = new JLabel [ is.getResultSize() ];
 
 		openButton = new JButton("Select an image...",
@@ -47,8 +92,11 @@ implements ActionListener {
 		JPanel buttonPanel = new JPanel(); //use FlowLayout
 		buttonPanel.add(openButton);
 		buttonPanel.add(searchButton);
-
-
+		buttonPanel.add(color);
+		buttonPanel.add(text);
+		buttonPanel.add(sift);
+		buttonPanel.add(visualConcept);
+		
 		JPanel imagePanel = new JPanel();
 		imagePanel.setLayout(new GridLayout(0,5));
 
@@ -86,7 +134,7 @@ implements ActionListener {
 		if (e.getSource() == openButton) {
 			if (fc == null) {
 				fc = new JFileChooser();
-
+				fc.setCurrentDirectory(new File("..\\ImageData\\test\\data"));
 				//Add a custom file filter and disable the default
 				//(Accept All) file filter.
 				fc.addChoosableFileFilter(new ImageFilter());
@@ -114,13 +162,13 @@ implements ActionListener {
 		}else if (e.getSource() == searchButton) {
 
 			try {
-				bufferedimage = ImageIO.read(file);
 				List<ImageData> results = new ArrayList<ImageData>();
-				results = is.search(SearchType.COLORHIST, bufferedimage);
+				// for now hard code the search types we want to use until we can add check box buttons to GUI
+				results = qp.processQuery(searchTypes, file);
 
 				for(int i = 0; i<is.getResultSize(); i++) {
 					imageLabels[i].setIcon(new ImageIcon(results.get(i).getImage()));
-					System.out.println(results.get(i));
+					//System.out.println(results.get(i));
 				}
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block

@@ -1,9 +1,9 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -11,25 +11,27 @@ public class ImageData {
 
 	private String filename;
 	private String filepath;
-	private List<String> categories;
-	private List<String> tags;
+	private Set<String> categories;
+	private Set<String> tags;
 
 	private double colorSimilarity;
+	private double textSimilarity;
 
 	private double[] colorHistogram;
 
-	public ImageData(String filename, String filepath, List<String> tags) {
+	public ImageData(String filename, String filepath, Set<String> tags) {
 		this.filename = filename;
-		this.categories = new ArrayList<String>();
+		this.categories = new HashSet<String>();
 		this.filepath = filepath;
-		this.tags = tags;
+		this.tags = tags != null ? tags : new HashSet<String>();
+		this.textSimilarity = 0.0;
 	}
 
-	public String filename() {
+	public String getFilename() {
 		return filename;
 	}
 
-	public List<String> getCategories() {
+	public Set<String> getCategories() {
 		return categories;
 	}
 
@@ -39,7 +41,7 @@ public class ImageData {
 		return img;
 	}
 
-	public List<String> getTags() {
+	public Set<String> getTags() {
 		return tags;
 	}
 
@@ -50,8 +52,12 @@ public class ImageData {
 	public double getColorSimilarity() {
 		return colorSimilarity;
 	}
+	
+	public double getTextSimilarity() {
+	    return textSimilarity;
+	}
 
-	public void setCategories(List<String> categories) {
+	public void setCategories(Set<String> categories) {
 		this.categories = categories;
 	}
 
@@ -62,11 +68,16 @@ public class ImageData {
 	public void setColorSimilarity(double colorSimilarity) {
 		this.colorSimilarity = colorSimilarity;
 	}
+	
+	public void setTextSimilarity(double textSimilarity) {
+	    this.textSimilarity = textSimilarity;
+	}
 
 	@Override
 	public String toString() {
-		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\n", filename,
+		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\nSimilarities:\n\tColor: %s\t Text: %s\n", filename,
 				Arrays.toString(categories.toArray()),
-				tags != null ? Arrays.toString(tags.toArray()) : "[]");
+				Arrays.toString(tags.toArray()),
+				colorSimilarity, textSimilarity);
 	}
 }

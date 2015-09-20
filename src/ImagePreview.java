@@ -4,6 +4,7 @@ import java.beans.*;
 import java.awt.*;
 import java.io.File;
 
+@SuppressWarnings("serial")
 public class ImagePreview extends JComponent
                           implements PropertyChangeListener {
     ImageIcon thumbnail = null;
