@@ -134,7 +134,7 @@ implements ActionListener {
 		if (e.getSource() == openButton) {
 			if (fc == null) {
 				fc = new JFileChooser();
-				fc.setCurrentDirectory(new File("..\\ImageData\\test\\data"));
+				fc.setCurrentDirectory(new File(".." + File.separator + "ImageData" + File.separator + "test" + File.separator + "data"));
 				//Add a custom file filter and disable the default
 				//(Accept All) file filter.
 				fc.addChoosableFileFilter(new ImageFilter());

@@ -12,10 +12,10 @@ public class ImageSearch {
 
 	// using relative path assuming default assignment folder structure
 	private static final int resultSize = 20; // size of the searching result
-	private static final String datasetpath = "..\\ImageData\\train\\data"; // training image set													// dataset
-	private static final String groundTruthsPath = "..\\Groundtruth\\train"; // groundtruths																			// file
-	private static final String imageListPath = "..\\ImageList\\train\\TrainImagelist.txt"; // image list																					// file
-	private static final String imageTagsPath = "..\\ImageData\\train\\train_tags.txt"; // image tags																			// tags
+	private static final String datasetpath = ".." + File.separator + "ImageData" + File.separator + "train" + File.separator + "data"; // training image set													// dataset
+	private static final String groundTruthsPath = ".." + File.separator + "Groundtruth" + File.separator + "train"; // groundtruths																			// file
+	private static final String imageListPath = ".." + File.separator + "ImageList" + File.separator + "train" + File.separator  +"TrainImagelist.txt"; // image list																					// file
+	private static final String imageTagsPath = ".." + File.separator + "ImageData" + File.separator + "train" + File.separator + "train_tags.txt"; // image tags																			// tags
 
 	Map<String, ImageData> images;
 
@@ -135,7 +135,7 @@ public class ImageSearch {
 					id.setColorHistogram(colorHistogram);
 				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

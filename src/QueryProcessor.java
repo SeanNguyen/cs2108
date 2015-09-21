@@ -8,10 +8,10 @@ import java.util.Set;
 
 public class QueryProcessor {
     
-    private static final String querydatasetpath = "..\\ImageData\\test\\data"; // query image set                                                   // dataset
-    private static final String queryGroundTruthsPath = "..\\Groundtruth\\test"; // query groundtruths                                                                            // file
-    private static final String queryImageListPath = "..\\ImageList\\test\\TestImagelist.txt"; // query image list                                                                                   // file
-    private static final String queryImageTagsPath = "..\\ImageData\\test\\test_tags.txt"; // query image tags                                                                           // tags
+    private static final String querydatasetpath = ".." + File.separator + "ImageData" + File.separator + "test" + File.separator + "data"; // query image set                                                   // dataset
+    private static final String queryGroundTruthsPath = ".." + File.separator + "Groundtruth" + File.separator + "test"; // query groundtruths                                                                            // file
+    private static final String queryImageListPath = ".." + File.separator + "ImageList" + File.separator + "test" + File.separator + "TestImagelist.txt"; // query image list                                                                                   // file
+    private static final String queryImageTagsPath = ".." + File.separator + "ImageData" + File.separator + "test" + File.separator + "test_tags.txt"; // query image tags                                                                           // tags
 
     Map<String, ImageData> queryImages;
     ImageSearch is;
