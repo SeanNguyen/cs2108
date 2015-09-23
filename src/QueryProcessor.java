@@ -1,5 +1,9 @@
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +17,8 @@ public class QueryProcessor {
     private static final String queryImageListPath = ".." + File.separator + "ImageList" + File.separator + "test" + File.separator + "TestImagelist.txt"; // query image list                                                                                   // file
     private static final String queryImageTagsPath = ".." + File.separator + "ImageData" + File.separator + "test" + File.separator + "test_tags.txt"; // query image tags                                                                           // tags
 
+    private static final String reportPath = ".." + File.separator;
+    
     Map<String, ImageData> queryImages;
     ImageSearch is;
 
@@ -27,6 +33,72 @@ public class QueryProcessor {
         List<ImageData> results = is.search(searchTypes, id);
         printF1(results, id);
         return results;
+    }
+    
+    public void generateReport(List<SearchType> searchTypes) {
+        double[] overallMetrics = new double[3];
+        int queryCount = 0;
+        Map<String, List<Double>> categoryMetrics = new HashMap<String, List<Double>>();
+        try {
+            for (File folder : new File(querydatasetpath).listFiles()) {
+                File dir = new File(folder.getPath());
+                File[] files = dir.listFiles();
+                for (int count = 0; count < files.length; count++) {
+                    if (!Utils.getExtension(files[count]).equals("sift")) {
+                        queryCount++;
+                        ImageData id = getQueryImage(files[count]);
+                        List<ImageData> results = is.search(searchTypes, id);
+                        double[] metrics = printF1(results, id);
+                        overallMetrics[0] += metrics[0];
+                        overallMetrics[1] += metrics[1];
+                        overallMetrics[2] += metrics[2];
+                        
+                        for(String category: id.getCategories()) {
+                            if(!categoryMetrics.containsKey(category)){
+                                categoryMetrics.put(category, new ArrayList<Double>(Arrays.asList(0.0, 0.0, 0.0, 0.0)));
+                            }
+                            categoryMetrics.get(category).set(0, categoryMetrics.get(category).get(0) + metrics[0]);
+                            categoryMetrics.get(category).set(1, categoryMetrics.get(category).get(1) + metrics[1]);
+                            categoryMetrics.get(category).set(2, categoryMetrics.get(category).get(2) + metrics[2]);
+                            categoryMetrics.get(category).set(3, categoryMetrics.get(category).get(3) + 1);
+                        }            
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        String reportFileName = "";
+        for (SearchType type: searchTypes) {
+            reportFileName += type;
+        }
+        
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(reportPath + reportFileName + ".html"))) {
+            String template = "<html><body>%s</body></html>";
+            String catTemplate = "<h3>%s</h3><p>%s</p><br>";
+            
+            double overallPrecision = overallMetrics[0] / queryCount;
+            double overallRecall = overallMetrics[1] / queryCount;
+            double overallF1 = overallMetrics[2] / queryCount;
+            
+            String header = String.format("<h2>Overall Average Metrics:<h2><p>Precision: %s<br>Recall: %s<Br>F1: %s</p>", 
+                    overallPrecision, overallRecall, overallF1);
+            
+            String body = "";
+            for(String key: categoryMetrics.keySet()) {
+                double avgPrecision = categoryMetrics.get(key).get(0) / categoryMetrics.get(key).get(3);
+                double avgRecall = categoryMetrics.get(key).get(1) / categoryMetrics.get(key).get(3);
+                double avgF1 = categoryMetrics.get(key).get(2) / categoryMetrics.get(key).get(3);
+                String stats = String.format("Precision: %s<br>Recall: %s<Br>F1: %s", avgPrecision, avgRecall, avgF1);
+                String line = String.format(catTemplate, key, stats);
+                body += line;
+            }
+            
+            bw.write(String.format(template, header+body));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     private ImageData getQueryImage(File queryFile) {
@@ -60,7 +132,8 @@ public class QueryProcessor {
         }
     }
     
-    private void printF1(List<ImageData> results, ImageData id) {
+    private double[] printF1(List<ImageData> results, ImageData id) {
+        double metrics[] = new double[3];
         double truePositives = 0;
         Map<String, Integer> count = new HashMap<String, Integer>();
         for(int i = 0; i < is.getResultSize(); i ++) {
@@ -85,12 +158,20 @@ public class QueryProcessor {
             System.out.printf("Category: %s, Count: %s\n", category, count.get(category));
         }
         
-        double totalRelevant = 50;
+        double totalRelevant = 20;
         double totalSelected = is.getResultSize();
         double precision = truePositives / totalSelected;
         double recall = truePositives / totalRelevant;
-        double f1 = 2 * ((precision * recall) / (precision + recall));
+        double f1;
+        if (!((precision + recall) == 0.0)) {
+           f1 = 2 * ((precision * recall) / (precision + recall));
+        } else {
+           f1 = 0.0;
+        }
         System.out.printf("Precision: %s, Recall: %s, F1: %s\n", precision, recall, f1);
-        
+        metrics[0] = precision;
+        metrics[1] = recall;
+        metrics[2] = f1;
+        return metrics;
     }
 }

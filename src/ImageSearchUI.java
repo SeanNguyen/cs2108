@@ -25,7 +25,7 @@ implements ActionListener {
 	JPanel contentPane;
 
 	JCheckBox color, text, sift, visualConcept;
-	JButton openButton, searchButton;
+	JButton openButton, searchButton, reportButton;
 	BufferedImage bufferedimage;
 
 	JLabel [] imageLabels;
@@ -87,7 +87,10 @@ implements ActionListener {
 
 		searchButton = new JButton("Search");
 		searchButton.addActionListener(this);
-
+		
+		reportButton = new JButton("Generate Report");
+        reportButton.addActionListener(this);
+        
 		//For layout purposes, put the buttons in a separate panel
 		JPanel buttonPanel = new JPanel(); //use FlowLayout
 		buttonPanel.add(openButton);
@@ -96,6 +99,7 @@ implements ActionListener {
 		buttonPanel.add(text);
 		buttonPanel.add(sift);
 		buttonPanel.add(visualConcept);
+		buttonPanel.add(reportButton);
 		
 		JPanel imagePanel = new JPanel();
 		imagePanel.setLayout(new GridLayout(0,5));
@@ -174,6 +178,8 @@ implements ActionListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+		} else if (e.getSource() == reportButton) {
+		    qp.generateReport(searchTypes);
 		}
 	}
 
