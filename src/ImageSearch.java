@@ -111,10 +111,15 @@ public class ImageSearch {
 
 	// loading of image data and calculation of color histogram etc
 	private void loadTrainingData() {
-		Map<String, Set<String>> tags = Commons.getTags(imageTagsPath);
-		Map<String, Set<String>> categories = Commons.getCategories(imageListPath, groundTruthsPath);
-
-		loadImageData(tags, categories);
+	    try {
+    		Map<String, Set<String>> tags = Commons.getTags(imageTagsPath);
+    		Map<String, Set<String>> categories = Commons.getCategories(imageListPath, groundTruthsPath);
+    
+    		loadImageData(tags, categories);
+            ColorHist.preprocess(images);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 	}
 
 	private void loadImageData(Map<String, Set<String>> tags,
@@ -129,10 +134,6 @@ public class ImageSearch {
 							files[count].getPath(), tags.get(filename));
 					id.setCategories(categories.get(filename));
 					images.put(filename, id);
-					
-					// preprocess search features
-					double[] colorHistogram = ColorHist.getHist(id);
-					id.setColorHistogram(colorHistogram);
 				}
 			}
 		} catch (Exception e) {

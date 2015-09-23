@@ -1,7 +1,16 @@
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ColorHist {
 
@@ -10,7 +19,43 @@ public class ColorHist {
 	// thats absurd
 	// even at 16 set your VM to -Xmx1024m just in case
 	private static final int dim = 16;
+	private static final String colorHistCacheFile = ".." + File.separator + "ImageData" + File.separator + "train" + File.separator + "colorhist" + dim + ".txt";
+	
+	public static void preprocess(Map<String, ImageData> images) throws IOException {
+	    File cacheFile = new File(colorHistCacheFile);
+	    if (cacheFile.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(colorHistCacheFile))) {
+                String line = br.readLine();
 
+                while (line != null) {
+                    double[] bins = new double[dim * dim * dim];
+                    String key = line.substring(0, line.indexOf(" "));
+                    String values = line.substring(line.indexOf("[") + 1, line.indexOf("]"));
+                    String binS[] = values.split(",\\s");
+                    for (int i = 0; i < binS.length; i++) {
+                        bins[i] = Double.parseDouble(binS[i]);
+                    }
+                    images.get(key).setColorHistogram(bins);
+                    line = br.readLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+	    } else {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(colorHistCacheFile))) {
+                for (ImageData id: images.values()) {
+                    double[] colorHistogram = getHist(id);
+                    id.setColorHistogram(colorHistogram);
+                    
+                    String line = String.format("%s %s%n", id.getFilename(), Arrays.toString(colorHistogram));
+                    bw.write(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+	    }
+	}
+	
 	public static void computeSimilarity(List<ImageData> images,
 	        ImageData queryImage) throws IOException {
 		double[] hist = getHist(queryImage);
