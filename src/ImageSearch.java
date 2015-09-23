@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,9 @@ public class ImageSearch {
 			throws IOException {
 		calculateSimilarities(searchTypes, queryImage);
 		List<ImageData> results = rankResults(searchTypes);
+		if (searchTypes.contains(SearchType.RELEVANCE)) {
+		   results = pseudoRelevanceFeedback(searchTypes, results); 
+		}
 		return results;
 	}
 	
@@ -110,6 +114,66 @@ public class ImageSearch {
 	        }
 			return simA > simB ? -1 : simA == simB ? 0 : 1;
 		}
+	}
+	
+	   class pseudoRankComparator implements Comparator<ImageData> {
+	        
+	       Map<String, Double> pseudoRanks;
+	        
+	        public pseudoRankComparator(Map<String, Double> pseudoRanks) {
+	            this.pseudoRanks = pseudoRanks;
+	        }
+	        
+	        public int compare(ImageData a, ImageData b) {
+	            double rankA = pseudoRanks.get(a.getFilename());
+	            double rankB = pseudoRanks.get(b.getFilename());
+	            return rankA > rankB ? -1 : rankA == rankB ? 0 : 1;
+	        }
+	        
+	   }
+	
+	private List<ImageData> pseudoRelevanceFeedback(List<SearchType> searchTypes, List<ImageData> results) throws IOException {
+        searchTypes = new ArrayList<SearchType>(searchTypes);
+        searchTypes.remove(SearchType.RELEVANCE);
+	    Map<String, Integer> count = new HashMap<String, Integer>();
+	    int highest = 0;
+        for (int i = 0; i < resultSize; i ++) {
+            Set<String> categories = results.get(i).getCategories();
+            for(String category: categories) {
+                if(!count.containsKey(category)) {
+                    count.put(category, 0);
+                }
+                count.put(category, count.get(category) + 1);
+                if (count.get(category) > highest){
+                    highest = count.get(category);
+                }
+            }
+        }
+        List<ImageData> feedback = new ArrayList<ImageData>();
+        for (String cat: count.keySet()) {
+            if(count.get(cat) == highest) {
+                for (int i = 0; i < resultSize; i ++) {
+                    if(results.get(i).getCategories().contains(cat)) {
+                        feedback.add(results.get(i));
+                    }
+                }
+            }
+        }
+        Map<String, Double> pseudoRanks = new HashMap<String, Double>();
+        for (ImageData id: feedback) {
+            List<ImageData> feedbackResults = search(searchTypes, id);
+            pseudoRanks.put(id.getFilename(), (double) feedbackResults.size());
+            double rank = 0.0;
+            for(ImageData fid: feedbackResults) {
+                if(!pseudoRanks.containsKey(fid.getFilename())) {
+                    pseudoRanks.put(fid.getFilename(), 0.0);
+                }
+                pseudoRanks.put(fid.getFilename(), pseudoRanks.get(fid.getFilename()) + (1.0 - ((rank/feedbackResults.size()))/feedback.size()));
+                rank++;
+            }
+        }
+        Collections.sort(results, new pseudoRankComparator(pseudoRanks));
+        return results;
 	}
 
 	// loading of image data and calculation of color histogram etc

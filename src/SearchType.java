@@ -1,4 +1,4 @@
 
 public enum SearchType {
-    COLORHIST, SIFT, FEATURE, TEXT, ALL;
+    COLORHIST, SIFT, FEATURE, TEXT, RELEVANCE, ALL;
 }

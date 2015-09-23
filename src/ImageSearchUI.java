@@ -24,7 +24,7 @@ implements ActionListener {
 	JFileChooser fc;
 	JPanel contentPane;
 
-	JCheckBox color, text, sift, visualConcept;
+	JCheckBox color, text, sift, visualConcept, relevance;
 	JButton openButton, searchButton, reportButton;
 	BufferedImage bufferedimage;
 
@@ -58,6 +58,7 @@ implements ActionListener {
                     searchTypes.remove(SearchType.TEXT);
                 }
         }});
+	    
 	    sift = new JCheckBox("Sift");
 	    sift.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {         
@@ -78,6 +79,15 @@ implements ActionListener {
                 }
         }});
 	    
+	    relevance = new JCheckBox("PseudoRelevanceFeedback");
+	    relevance.addItemListener(new ItemListener() {
+        public void itemStateChanged(ItemEvent e) {         
+            if(e.getStateChange() == 1) {
+                searchTypes.add(SearchType.RELEVANCE);
+            } else {
+                searchTypes.remove(SearchType.RELEVANCE);
+            }
+        }});
 	    
 		imageLabels = new JLabel [ is.getResultSize() ];
 
@@ -99,6 +109,7 @@ implements ActionListener {
 		buttonPanel.add(text);
 		buttonPanel.add(sift);
 		buttonPanel.add(visualConcept);
+		buttonPanel.add(relevance);
 		buttonPanel.add(reportButton);
 		
 		JPanel imagePanel = new JPanel();
