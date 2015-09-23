@@ -76,7 +76,6 @@ public class QueryProcessor {
                 }
                 count.put(category, count.get(category) + 1);
             }
-            
         }
         
         System.out.println("Input image has categories: " + id.getCategories());

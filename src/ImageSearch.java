@@ -46,6 +46,7 @@ public class ImageSearch {
                     break;
     
                 case SIFT:
+                    Sift.computeSimilarity(new ArrayList<ImageData>(images.values()), queryImage);
                     break;
     
                 case FEATURE:
@@ -91,14 +92,16 @@ public class ImageSearch {
 	                    break;
 	    
 	                case SIFT:
+                        simA += a.getSiftSimilarity();
+                        simB += b.getSiftSimilarity();
 	                    break;
 	    
 	                case FEATURE:
 	                    break;
 	    
 	                case TEXT:
-                        simA += a.getTextSimilarity();
-                        simB += b.getTextSimilarity();
+                        simA += a.getTextSimilarity() * 2;
+                        simB += b.getTextSimilarity() * 2;
 	                    break;
 	    
 	                default:
@@ -117,6 +120,7 @@ public class ImageSearch {
     
     		loadImageData(tags, categories);
             ColorHist.preprocess(images);
+            Sift.preprocess(images);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -129,11 +133,13 @@ public class ImageSearch {
 				File dir = new File(folder.getPath());
 				File[] files = dir.listFiles();
 				for (int count = 0; count < files.length; count++) {
-					String filename = files[count].getName();
-					ImageData id = new ImageData(filename,
-							files[count].getPath(), tags.get(filename));
-					id.setCategories(categories.get(filename));
-					images.put(filename, id);
+				    if (!Utils.getExtension(files[count]).equals("sift")) {
+	                    String filename = files[count].getName();
+	                    ImageData id = new ImageData(filename,
+	                            files[count].getPath(), tags.get(filename));
+	                    id.setCategories(categories.get(filename));
+	                    images.put(filename, id);
+				    }
 				}
 			}
 		} catch (Exception e) {

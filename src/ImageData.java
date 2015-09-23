@@ -16,15 +16,16 @@ public class ImageData {
 
 	private double colorSimilarity;
 	private double textSimilarity;
+	private double siftSimilarity;
 
 	private double[] colorHistogram;
+	private double[] siftHistogram;
 
 	public ImageData(String filename, String filepath, Set<String> tags) {
 		this.filename = filename;
 		this.categories = new HashSet<String>();
 		this.filepath = filepath;
 		this.tags = tags != null ? tags : new HashSet<String>();
-		this.textSimilarity = 0.0;
 	}
 
 	public String getFilename() {
@@ -40,6 +41,10 @@ public class ImageData {
 		BufferedImage img = ImageIO.read(file);
 		return img;
 	}
+	
+	public String getFilePath() {
+	    return filepath;
+	}
 
 	public Set<String> getTags() {
 		return tags;
@@ -47,6 +52,10 @@ public class ImageData {
 
 	public double[] getColorHistogram() {
 		return colorHistogram;
+	}
+	
+	public double[] getSiftHistogram() {
+	    return siftHistogram;
 	}
 
 	public double getColorSimilarity() {
@@ -57,12 +66,20 @@ public class ImageData {
 	    return textSimilarity;
 	}
 
+   public double getSiftSimilarity() {
+        return siftSimilarity;
+    }
+	   
 	public void setCategories(Set<String> categories) {
 		this.categories = categories;
 	}
 
 	public void setColorHistogram(double[] colorHistogram) {
 		this.colorHistogram = colorHistogram;
+	}
+	
+	public void setSiftHistogram(double[] siftHistogram) {
+	    this.siftHistogram = siftHistogram;
 	}
 
 	public void setColorSimilarity(double colorSimilarity) {
@@ -72,7 +89,10 @@ public class ImageData {
 	public void setTextSimilarity(double textSimilarity) {
 	    this.textSimilarity = textSimilarity;
 	}
-
+	
+    public void setSiftSimilarity(double siftSimilarity) {
+        this.siftSimilarity = siftSimilarity;
+    }
 	@Override
 	public String toString() {
 		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\nSimilarities:\n\tColor: %s\t Text: %s\n", filename,

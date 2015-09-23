@@ -7,10 +7,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ColorHist {
 
@@ -67,7 +65,7 @@ public class ColorHist {
 		}
 	}
 
-	public static double[] getHist(ImageData queryImage) throws IOException {
+	private static double[] getHist(ImageData queryImage) throws IOException {
 	    BufferedImage image = queryImage.getImage();
 		int imHeight = image.getHeight();
 		int imWidth = image.getWidth();
