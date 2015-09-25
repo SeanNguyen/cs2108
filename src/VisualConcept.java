@@ -1,6 +1,6 @@
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -11,6 +11,8 @@ public class VisualConcept {
 	private static final String unprocessedImagePaths = System.getProperty("user.dir") + File.separator + "bin" + File.separator + "unprocessedImagePaths.txt"; 
 	private static final String visualConceptExeFileWorkingDir = ".." + File.separator + "FeatureExtractor" + File.separator + "semanticFeature";
 	private static final String visualConceptExeFile = visualConceptExeFileWorkingDir + File.separator + "image_classification.exe";
+	
+	private static final int categorySize = 1000;
 	
     public static void preprocess(Map<String, ImageData> imageDataMaps) throws IOException {
         //prepare a path input file
@@ -25,11 +27,27 @@ public class VisualConcept {
     }
     
     public static void computeSimilarity(List<ImageData> images, ImageData queryImage) throws IOException {
+    	double[] queryImageScores = queryImage.getVisualConceptScores();
+    	for(ImageData imageData: images) {
+    		double[] imageScores = imageData.getVisualConceptScores();
+    		double similarity = computeSimilarity(queryImageScores, imageScores);
+    		imageData.setVisualConceptSimilarity(similarity);
+    	}
     }
     
     //private helper methods
-    private static double computeSimilarity(double[] hist, double[] h) {
-    	return 0;
+    private static double computeSimilarity(double[] classificationScoreImg1, double[] classificationScoreImg2) {
+    	// Ok, so how we get this similarity score is very optional
+    	// First we see if 2 imgs is in the same category, 
+    	// If they have a common category then get the lower score to add to the total similarity score
+    	// As a result, imgs with more common category and score higher tgt in some common category will have better result.
+    	double similarity = 0;
+    	for(int i = 0; i < categorySize; i++) {
+    		if(classificationScoreImg1[i] > 0 && classificationScoreImg2[i] > 0) {
+    			similarity += Math.min(classificationScoreImg1[i], classificationScoreImg2[i]);
+    		}
+    	}
+    	return similarity;
     }
     
     private static void createInputPathFile(Map<String, ImageData> imageDataMaps) {
@@ -39,7 +57,10 @@ public class VisualConcept {
         		String visualConceptFileName = Utils.changeExtension(fileName, "txt");
         		//check if this image has been process or not
         		File visualConceptFile = new File(visualConceptFileName);
-        		if(!visualConceptFile.exists()) {
+        		if(visualConceptFile.exists()) {
+        			double[] visualConceptScores = getVisualConceptScoreFromFile(imageData);
+        			imageData.setVisualConceptScores(visualConceptScores);
+        		} else {
             		bw.write(".." + File.separator + fileName);
             		bw.newLine();
         		}
@@ -70,5 +91,21 @@ public class VisualConcept {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+    }
+
+    private static double[] getVisualConceptScoreFromFile(ImageData image) throws FileNotFoundException {
+    	double[] result = new double[categorySize];
+    	//read data from pre-computed file
+		String visualConceptDataPath = Utils.changeExtension(image.getFilePath(), Utils.txt);
+		File visualConceptDataFile = new File(visualConceptDataPath);
+		Scanner scanner = new Scanner(visualConceptDataFile);
+		
+		int count = 0;
+		while(scanner.hasNext()) {
+			double score = scanner.nextDouble();
+			result[count] = score;
+			count++;
+		}
+		return result;
     }
 }

@@ -17,6 +17,7 @@ public class ImageData {
 	private double colorSimilarity;
 	private double textSimilarity;
 	private double siftSimilarity;
+	private double visualConceptSimilarity;
 
 	private double[] colorHistogram;
 	private double[] siftHistogram;
@@ -75,6 +76,10 @@ public class ImageData {
 		return siftSimilarity;
 	}
 	
+	public double getVisualConceptSimilarity() {
+		return visualConceptSimilarity;
+	}
+	
 	public void setCategories(Set<String> categories) {
 		if (categories != null) {
 			this.categories = categories;
@@ -105,6 +110,10 @@ public class ImageData {
 		this.siftSimilarity = siftSimilarity;
 	}
 
+	public void setVisualConceptSimilarity(double visualConceptSimilarity) {
+		this.visualConceptSimilarity = visualConceptSimilarity;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\nSimilarities:\n\tColor: %s\t Text: %s\n",
