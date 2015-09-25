@@ -188,7 +188,7 @@ public class ImageSearch {
 				File dir = new File(folder.getPath());
 				File[] files = dir.listFiles();
 				for (int count = 0; count < files.length; count++) {
-				    if (!Utils.getExtension(files[count]).equals("sift")) {
+				    if (!Utils.getExtension(files[count]).equals("sift") && !Utils.getExtension(files[count]).equals("txt")) {
 	                    String filename = files[count].getName();
 	                    ImageData id = new ImageData(filename,
 	                            files[count].getPath(), tags.get(filename));

@@ -8,16 +8,17 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class VisualConcept {
-	private static final String imagePaths = System.getProperty("user.dir") + File.separator + "bin" + File.separator + "imagePaths.txt"; 
+	private static final String unprocessedImagePaths = System.getProperty("user.dir") + File.separator + "bin" + File.separator + "unprocessedImagePaths.txt"; 
 	private static final String visualConceptExeFileWorkingDir = ".." + File.separator + "FeatureExtractor" + File.separator + "semanticFeature";
 	private static final String visualConceptExeFile = visualConceptExeFileWorkingDir + File.separator + "image_classification.exe";
 	
     public static void preprocess(Map<String, ImageData> imageDataMaps) throws IOException {
         //prepare a path input file
-        File imagePathsFile = new File(imagePaths);
-        if(!imagePathsFile.exists()) {
-        	createInputPathFile(imageDataMaps);
+        File imagePathsFile = new File(unprocessedImagePaths);
+        if(imagePathsFile.exists()) {
+        	imagePathsFile.delete();
         }
+        createInputPathFile(imageDataMaps);
 
         //run the visual concept tool - THIS TAKE REALLY LONG
         runVisualConceptTool();
@@ -32,11 +33,16 @@ public class VisualConcept {
     }
     
     private static void createInputPathFile(Map<String, ImageData> imageDataMaps) {
-    	try (BufferedWriter bw = new BufferedWriter(new FileWriter(imagePaths))) {
+    	try (BufferedWriter bw = new BufferedWriter(new FileWriter(unprocessedImagePaths))) {
     		for(ImageData imageData: imageDataMaps.values()) {
-        		String fileName = ".." + File.separator + imageData.getFilePath();
-        		String line = String.format("%s%n", fileName);
-        		bw.write(line);
+        		String fileName = imageData.getFilePath();
+        		String visualConceptFileName = Utils.changeExtension(fileName, "txt");
+        		//check if this image has been process or not
+        		File visualConceptFile = new File(visualConceptFileName);
+        		if(!visualConceptFile.exists()) {
+            		bw.write(".." + File.separator + fileName);
+            		bw.newLine();
+        		}
         	}
     		bw.close();
         } catch (IOException e) {
@@ -45,7 +51,7 @@ public class VisualConcept {
     }
     
     private static void runVisualConceptTool() throws IOException {
-    	ProcessBuilder processBuilder = new ProcessBuilder(visualConceptExeFile, imagePaths);
+    	ProcessBuilder processBuilder = new ProcessBuilder(visualConceptExeFile, unprocessedImagePaths);
         processBuilder.directory(new File(visualConceptExeFileWorkingDir).getAbsoluteFile());
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();

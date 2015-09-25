@@ -23,6 +23,15 @@ public class Utils {
         }
         return ext;
     }
+    
+    public static String changeExtension(String fileDir, String newExtension) {
+        int i = fileDir.lastIndexOf('.');
+
+        if (i > 0 &&  i < fileDir.length() - 1) {
+        	fileDir = fileDir.substring(0, i + 1) + newExtension;
+        }
+        return fileDir;
+    }
 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
