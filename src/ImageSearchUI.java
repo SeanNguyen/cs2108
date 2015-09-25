@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +18,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 @SuppressWarnings("serial")
 public class ImageSearchUI extends JFrame
@@ -28,7 +30,7 @@ implements ActionListener {
 	JButton openButton, searchButton, reportButton, next, prev;
 	BufferedImage bufferedimage;
 	JLabel page;
-	JLabel [] imageLabels;
+	JButton [] imageLabels;
 
 	File file = null;
 
@@ -36,7 +38,8 @@ implements ActionListener {
 	QueryProcessor qp = new QueryProcessor(is);
 	List<SearchType> searchTypes;
 	List<ImageData> results = new ArrayList<ImageData>();
-	
+	List<ImageData> feedback = new ArrayList<ImageData>();
+ 	
 	int currentPage = 0;
 	
 	public ImageSearchUI() {
@@ -92,7 +95,7 @@ implements ActionListener {
             }
         }});
 	    
-		imageLabels = new JLabel [ is.getResultSize() ];
+		imageLabels = new JButton [ is.getResultSize() ];
 
 		openButton = new JButton("Select an image...",
 				createImageIcon("images/Open16.gif"));
@@ -132,8 +135,24 @@ implements ActionListener {
 		imagePanel.setLayout(new GridLayout(0,5));
 
 		for (int i = 0; i<imageLabels.length;i++){
-			imageLabels[i] = new JLabel();
+		    final JButton image = new JButton();
+		    image.setBackground(Color.WHITE);
+			imageLabels[i] = image;
 			imagePanel.add(imageLabels[i]);
+			
+			image.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(image.getBackground() == Color.WHITE) {
+                        image.setBackground(Color.GRAY);
+                        feedback.add(results.get(Integer.parseInt(image.getToolTipText())));
+                    } else {
+                        image.setBackground(Color.WHITE);
+                        feedback.remove(results.get(Integer.parseInt(image.getToolTipText())));
+                    }
+                }
+            });
 		}
 
 		contentPane = (JPanel)this.getContentPane();
@@ -194,9 +213,10 @@ implements ActionListener {
 		}else if (e.getSource() == searchButton) {
 
 			try {
-				results = qp.processQuery(searchTypes, file);
+				results = qp.processQuery(searchTypes, file, feedback);
+				feedback = new ArrayList<ImageData>();
 		        currentPage = 0;
-				drawPage(imageLabels, results);
+				drawPage();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -206,7 +226,7 @@ implements ActionListener {
 		} else if (e.getSource() == next){
 		    currentPage++;
 		    try {
-                drawPage(imageLabels, results);
+                drawPage();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -215,17 +235,19 @@ implements ActionListener {
 		        currentPage--;
 		    }
             try {
-                drawPage(imageLabels, results);
+                drawPage();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-		}
+		} 
 	}
 	
-	private void drawPage(JLabel[] imageLabels, List<ImageData> results) throws IOException {
+	private void drawPage() throws IOException {
         page.setText(String.format("%s-%s of %s", (currentPage*is.getResultSize()), (currentPage*is.getResultSize()) + 20, results.size()));
         for(int i = 0; i<is.getResultSize(); i++) {
             imageLabels[i].setIcon(new ImageIcon(results.get(i + (currentPage*is.getResultSize())).getImage()));
+            imageLabels[i].setBackground(Color.WHITE);
+            imageLabels[i].setToolTipText(String.format("%s", i));  
         }
 	}
 

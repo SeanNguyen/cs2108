@@ -28,9 +28,9 @@ public class QueryProcessor {
         loadQueryData();
     }
     
-    public List<ImageData> processQuery(List<SearchType> searchTypes, File queryFile) throws IOException {
+    public List<ImageData> processQuery(List<SearchType> searchTypes, File queryFile, List<ImageData> feedback) throws IOException {
         ImageData id = getQueryImage(queryFile);
-        List<ImageData> results = is.search(searchTypes, id);
+        List<ImageData> results = is.search(searchTypes, id, feedback);
         printF1(results, id);
         return results;
     }
@@ -47,7 +47,7 @@ public class QueryProcessor {
                     if (!Utils.getExtension(files[count]).equals("sift")) {
                         queryCount++;
                         ImageData id = getQueryImage(files[count]);
-                        List<ImageData> results = is.search(searchTypes, id);
+                        List<ImageData> results = is.search(searchTypes, id, null);
                         double[] metrics = printF1(results, id);
                         overallMetrics[0] += metrics[0];
                         overallMetrics[1] += metrics[1];

@@ -71,7 +71,9 @@ public class ImageData {
     }
 	   
 	public void setCategories(Set<String> categories) {
-		this.categories = categories;
+	    if (categories != null) {
+	        this.categories = categories;
+	    }
 	}
 
 	public void setColorHistogram(double[] colorHistogram) {

@@ -31,12 +31,22 @@ public class ImageSearch {
 		return resultSize;
 	}
 
-	public List<ImageData> search(List<SearchType> searchTypes, ImageData queryImage)
+	public List<ImageData> search(List<SearchType> searchTypes, ImageData queryImage, List<ImageData> feedback) 
 			throws IOException {
 		calculateSimilarities(searchTypes, queryImage);
 		List<ImageData> results = rankResults(searchTypes);
 		if (searchTypes.contains(SearchType.RELEVANCE)) {
-		   results = pseudoRelevanceFeedback(searchTypes, results, queryImage); 
+		   if(feedback.size() == 0) {
+		        feedback = new ArrayList<ImageData>();
+		        for (int i = 0; i < resultSize; i ++) {
+		            Set<String> intersection = new HashSet<String>(queryImage.getCategories());
+		            intersection.retainAll(results.get(i).getCategories());
+		            if(intersection.size() > 0) {
+		                feedback.add(results.get(i));
+		            }
+		        }
+		   }
+		   results = pseudoRelevanceFeedback(searchTypes, results, feedback); 
 		}
 		return results;
 	}
@@ -135,21 +145,13 @@ public class ImageSearch {
 	        
 	   }
 	
-	private List<ImageData> pseudoRelevanceFeedback(List<SearchType> searchTypes, List<ImageData> results, ImageData queryImage) throws IOException {
+	private List<ImageData> pseudoRelevanceFeedback(List<SearchType> searchTypes, List<ImageData> results, List<ImageData> feedback) throws IOException {
         searchTypes = new ArrayList<SearchType>(searchTypes);
         searchTypes.remove(SearchType.RELEVANCE);
         
-        List<ImageData> feedback = new ArrayList<ImageData>();
-        for (int i = 0; i < resultSize; i ++) {
-            Set<String> intersection = new HashSet<String>(queryImage.getCategories());
-            intersection.retainAll(results.get(i).getCategories());
-            if(intersection.size() > 0) {
-                feedback.add(results.get(i));
-            }
-        }
         Map<String, Double> pseudoRanks = new HashMap<String, Double>();
         for (ImageData id: feedback) {
-            List<ImageData> feedbackResults = search(searchTypes, id);
+            List<ImageData> feedbackResults = search(searchTypes, id, null);
             pseudoRanks.put(id.getFilename(), (double) feedbackResults.size());
             double rank = 0.0;
             for(ImageData fid: feedbackResults) {
