@@ -42,26 +42,28 @@ public class QueryProcessor {
         try {
             for (File folder : new File(querydatasetpath).listFiles()) {
                 File dir = new File(folder.getPath());
-                File[] files = dir.listFiles();
-                for (int count = 0; count < files.length; count++) {
-                    if (!Utils.getExtension(files[count]).equals("sift")) {
-                        queryCount++;
-                        ImageData id = getQueryImage(files[count]);
-                        List<ImageData> results = is.search(searchTypes, id, null);
-                        double[] metrics = printF1(results, id);
-                        overallMetrics[0] += metrics[0];
-                        overallMetrics[1] += metrics[1];
-                        overallMetrics[2] += metrics[2];
-                        
-                        for(String category: id.getCategories()) {
-                            if(!categoryMetrics.containsKey(category)){
-                                categoryMetrics.put(category, new ArrayList<Double>(Arrays.asList(0.0, 0.0, 0.0, 0.0)));
-                            }
-                            categoryMetrics.get(category).set(0, categoryMetrics.get(category).get(0) + metrics[0]);
-                            categoryMetrics.get(category).set(1, categoryMetrics.get(category).get(1) + metrics[1]);
-                            categoryMetrics.get(category).set(2, categoryMetrics.get(category).get(2) + metrics[2]);
-                            categoryMetrics.get(category).set(3, categoryMetrics.get(category).get(3) + 1);
-                        }            
+                if (dir.isDirectory()) {
+                    File[] files = dir.listFiles();
+                    for (int count = 0; count < files.length; count++) {
+                        if (!Utils.getExtension(files[count]).equals("sift")) {
+                            queryCount++;
+                            ImageData id = getQueryImage(files[count]);
+                            List<ImageData> results = is.search(searchTypes, id, null);
+                            double[] metrics = printF1(results, id);
+                            overallMetrics[0] += metrics[0];
+                            overallMetrics[1] += metrics[1];
+                            overallMetrics[2] += metrics[2];
+                            
+                            for(String category: id.getCategories()) {
+                                if(!categoryMetrics.containsKey(category)){
+                                    categoryMetrics.put(category, new ArrayList<Double>(Arrays.asList(0.0, 0.0, 0.0, 0.0)));
+                                }
+                                categoryMetrics.get(category).set(0, categoryMetrics.get(category).get(0) + metrics[0]);
+                                categoryMetrics.get(category).set(1, categoryMetrics.get(category).get(1) + metrics[1]);
+                                categoryMetrics.get(category).set(2, categoryMetrics.get(category).get(2) + metrics[2]);
+                                categoryMetrics.get(category).set(3, categoryMetrics.get(category).get(3) + 1);
+                            }            
+                        }
                     }
                 }
             }
@@ -121,11 +123,19 @@ public class QueryProcessor {
         Map<String, Set<String>> categories) {
         for (File folder : new File(querydatasetpath).listFiles()) {
             File dir = new File(folder.getPath());
-            File[] files = dir.listFiles();
-            for (int count = 0; count < files.length; count++) {
-                String filename = files[count].getName();
+            if (dir.isDirectory()) {
+                File[] files = dir.listFiles();
+                for (int count = 0; count < files.length; count++) {
+                    String filename = files[count].getName();
+                    ImageData id = new ImageData(filename,
+                            files[count].getPath(), tags.get(filename));
+                    id.setCategories(categories.get(filename));
+                    queryImages.put(filename, id);
+                }
+            } else {
+                String filename = dir.getName();
                 ImageData id = new ImageData(filename,
-                        files[count].getPath(), tags.get(filename));
+                        dir.getPath(), tags.get(filename));
                 id.setCategories(categories.get(filename));
                 queryImages.put(filename, id);
             }
