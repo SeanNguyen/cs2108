@@ -48,7 +48,7 @@ public class QueryProcessor {
                         if (!Utils.getExtension(files[count]).equals("sift")) {
                             queryCount++;
                             ImageData id = getQueryImage(files[count]);
-                            List<ImageData> results = is.search(searchTypes, id, null);
+                            List<ImageData> results = is.search(searchTypes, id, new ArrayList<ImageData>());
                             double[] metrics = printF1(results, id);
                             overallMetrics[0] += metrics[0];
                             overallMetrics[1] += metrics[1];
