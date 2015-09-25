@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Vector;
 
 public class VisualConcept {
 	private static final String unprocessedImagePaths = System.getProperty("user.dir") + File.separator + "bin" + File.separator + "unprocessedImagePaths.txt"; 
@@ -20,10 +21,14 @@ public class VisualConcept {
         if(imagePathsFile.exists()) {
         	imagePathsFile.delete();
         }
-        createInputPathFile(imageDataMaps);
-
-        //run the visual concept tool - THIS TAKE REALLY LONG
-        runVisualConceptTool();
+        
+        //get a list of unprocessed jpg file
+        Vector<String> unprocessedFiles = getUnprocessedFiles(imageDataMaps);
+        if(unprocessedFiles.size() > 0) {
+            createInputPathFile(unprocessedFiles);
+            //run the visual concept tool - THIS TAKE REALLY LONG
+            runVisualConceptTool();
+        }
     }
     
     public static void computeSimilarity(List<ImageData> images, ImageData queryImage) throws IOException {
@@ -50,20 +55,28 @@ public class VisualConcept {
     	return similarity;
     }
     
-    private static void createInputPathFile(Map<String, ImageData> imageDataMaps) {
+    private static Vector<String> getUnprocessedFiles(Map<String, ImageData> imageDataMaps) throws FileNotFoundException {
+    	Vector<String> unprocessedFiles = new Vector<>();
+		for(ImageData imageData: imageDataMaps.values()) {
+    		String fileName = imageData.getFilePath();
+    		String visualConceptFileName = Utils.changeExtension(fileName, "txt");
+    		//check if this image has been process or not
+    		File visualConceptFile = new File(visualConceptFileName);
+    		if(visualConceptFile.exists()) {
+    			double[] visualConceptScores = getVisualConceptScoreFromFile(imageData);
+    			imageData.setVisualConceptScores(visualConceptScores);
+    		} else {
+    			unprocessedFiles.add(imageData.getFilePath());
+    		}
+    	}
+		return unprocessedFiles;
+    }
+    
+    private static void createInputPathFile(Vector<String> unprocessedFiles) {
     	try (BufferedWriter bw = new BufferedWriter(new FileWriter(unprocessedImagePaths))) {
-    		for(ImageData imageData: imageDataMaps.values()) {
-        		String fileName = imageData.getFilePath();
-        		String visualConceptFileName = Utils.changeExtension(fileName, "txt");
-        		//check if this image has been process or not
-        		File visualConceptFile = new File(visualConceptFileName);
-        		if(visualConceptFile.exists()) {
-        			double[] visualConceptScores = getVisualConceptScoreFromFile(imageData);
-        			imageData.setVisualConceptScores(visualConceptScores);
-        		} else {
-            		bw.write(".." + File.separator + fileName);
-            		bw.newLine();
-        		}
+    		for(String filePath: unprocessedFiles) {
+        		bw.write(".." + File.separator + filePath);
+        		bw.newLine();
         	}
     		bw.close();
         } catch (IOException e) {
@@ -106,6 +119,7 @@ public class VisualConcept {
 			result[count] = score;
 			count++;
 		}
+		scanner.close();
 		return result;
     }
 }
