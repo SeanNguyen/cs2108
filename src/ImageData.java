@@ -20,6 +20,7 @@ public class ImageData {
 
 	private double[] colorHistogram;
 	private double[] siftHistogram;
+	private double[] visualConceptScores;
 
 	public ImageData(String filename, String filepath, Set<String> tags) {
 		this.filename = filename;
@@ -41,9 +42,9 @@ public class ImageData {
 		BufferedImage img = ImageIO.read(file);
 		return img;
 	}
-	
+
 	public String getFilePath() {
-	    return filepath;
+		return filepath;
 	}
 
 	public Set<String> getTags() {
@@ -53,53 +54,61 @@ public class ImageData {
 	public double[] getColorHistogram() {
 		return colorHistogram;
 	}
-	
+
 	public double[] getSiftHistogram() {
-	    return siftHistogram;
+		return siftHistogram;
 	}
 
+	public double[] getVisualConceptScores() {
+		return visualConceptScores;
+	}
+	
 	public double getColorSimilarity() {
 		return colorSimilarity;
 	}
-	
+
 	public double getTextSimilarity() {
-	    return textSimilarity;
+		return textSimilarity;
 	}
 
-   public double getSiftSimilarity() {
-        return siftSimilarity;
-    }
-	   
+	public double getSiftSimilarity() {
+		return siftSimilarity;
+	}
+	
 	public void setCategories(Set<String> categories) {
-	    if (categories != null) {
-	        this.categories = categories;
-	    }
+		if (categories != null) {
+			this.categories = categories;
+		}
 	}
 
 	public void setColorHistogram(double[] colorHistogram) {
 		this.colorHistogram = colorHistogram;
 	}
-	
+
 	public void setSiftHistogram(double[] siftHistogram) {
-	    this.siftHistogram = siftHistogram;
+		this.siftHistogram = siftHistogram;
 	}
 
+	public void setVisualConceptScores(double[] visualConceptScores) {
+		this.visualConceptScores = visualConceptScores;
+	}
+	
 	public void setColorSimilarity(double colorSimilarity) {
 		this.colorSimilarity = colorSimilarity;
 	}
-	
+
 	public void setTextSimilarity(double textSimilarity) {
-	    this.textSimilarity = textSimilarity;
+		this.textSimilarity = textSimilarity;
 	}
-	
-    public void setSiftSimilarity(double siftSimilarity) {
-        this.siftSimilarity = siftSimilarity;
-    }
+
+	public void setSiftSimilarity(double siftSimilarity) {
+		this.siftSimilarity = siftSimilarity;
+	}
+
 	@Override
 	public String toString() {
-		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\nSimilarities:\n\tColor: %s\t Text: %s\n", filename,
-				Arrays.toString(categories.toArray()),
-				Arrays.toString(tags.toArray()),
-				colorSimilarity, textSimilarity);
+		return String.format("Filename:\n\t%s\nCategories:\n\t%s\nTags:\n\t%s\nSimilarities:\n\tColor: %s\t Text: %s\n",
+				filename, Arrays.toString(categories.toArray()), Arrays.toString(tags.toArray()), colorSimilarity,
+				textSimilarity);
 	}
 }

@@ -175,6 +175,7 @@ public class ImageSearch {
     		loadImageData(tags, categories);
             ColorHist.preprocess(images);
             Sift.preprocess(images);
+            VisualConcept.preprocess(images);
         } catch (IOException e) {
             e.printStackTrace();
         }
