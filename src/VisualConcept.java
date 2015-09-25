@@ -32,7 +32,17 @@ public class VisualConcept {
     }
     
     public static void computeSimilarity(List<ImageData> images, ImageData queryImage) throws IOException {
-    	double[] queryImageScores = getVisualConceptScoreFromFile(queryImage);
+    	String queryImageVCFilePath = Utils.changeExtension(queryImage.getFilePath(), Utils.txt);
+    	File queryImageVCFile = new File(queryImageVCFilePath);
+		if(!queryImageVCFile.exists()) {
+			//the image file haven't been process, let's process it
+			Vector<String> unprocessFiles = new Vector<>();
+			unprocessFiles.add(queryImage.getFilePath());
+			createInputPathFile(unprocessFiles);
+			runVisualConceptTool();
+		}
+		double[] queryImageScores = getVisualConceptScoreFromFile(queryImage);
+    	
     	for(ImageData imageData: images) {
     		double[] imageScores = imageData.getVisualConceptScores();
     		double similarity = computeSimilarity(queryImageScores, imageScores);
@@ -47,6 +57,10 @@ public class VisualConcept {
     	// If they have a common category then get the lower score to add to the total similarity score
     	// As a result, imgs with more common category and score higher tgt in some common category will have better result.
     	double similarity = 0;
+    	if(classificationScoreImg1 == null || classificationScoreImg2 == null 
+    			|| classificationScoreImg1.length < 1000 || classificationScoreImg2.length < 1000) {
+    		return 0;
+    	}
     	for(int i = 0; i < categorySize; i++) {
     		if(classificationScoreImg1[i] > 0 && classificationScoreImg2[i] > 0) {
     			similarity += Math.min(classificationScoreImg1[i], classificationScoreImg2[i]);
