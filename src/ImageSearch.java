@@ -117,6 +117,8 @@ public class ImageSearch {
 					break;
 
 				case FEATURE:
+					simA += a.getVisualConceptSimilarity();
+					simB += b.getVisualConceptSimilarity();
 					break;
 
 				case TEXT:

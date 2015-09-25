@@ -27,7 +27,7 @@ public class VisualConcept {
     }
     
     public static void computeSimilarity(List<ImageData> images, ImageData queryImage) throws IOException {
-    	double[] queryImageScores = queryImage.getVisualConceptScores();
+    	double[] queryImageScores = getVisualConceptScoreFromFile(queryImage);
     	for(ImageData imageData: images) {
     		double[] imageScores = imageData.getVisualConceptScores();
     		double similarity = computeSimilarity(queryImageScores, imageScores);
