@@ -25,9 +25,9 @@ implements ActionListener {
 	JPanel contentPane;
 
 	JCheckBox color, text, sift, visualConcept, relevance;
-	JButton openButton, searchButton, reportButton;
+	JButton openButton, searchButton, reportButton, next, prev;
 	BufferedImage bufferedimage;
-
+	JLabel page;
 	JLabel [] imageLabels;
 
 	File file = null;
@@ -35,6 +35,9 @@ implements ActionListener {
 	ImageSearch is = new ImageSearch();
 	QueryProcessor qp = new QueryProcessor(is);
 	List<SearchType> searchTypes;
+	List<ImageData> results = new ArrayList<ImageData>();
+	
+	int currentPage = 0;
 	
 	public ImageSearchUI() {
 	    searchTypes = new ArrayList<SearchType>();
@@ -101,6 +104,14 @@ implements ActionListener {
 		reportButton = new JButton("Generate Report");
         reportButton.addActionListener(this);
         
+        next = new JButton("Next");
+        next.addActionListener(this);
+        
+        prev = new JButton("Prev");
+        prev.addActionListener(this);
+        
+        page = new JLabel("test");
+        
 		//For layout purposes, put the buttons in a separate panel
 		JPanel buttonPanel = new JPanel(); //use FlowLayout
 		buttonPanel.add(openButton);
@@ -111,6 +122,11 @@ implements ActionListener {
 		buttonPanel.add(visualConcept);
 		buttonPanel.add(relevance);
 		buttonPanel.add(reportButton);
+		
+		JPanel paginationPanel = new JPanel();
+		paginationPanel.add(prev);
+		paginationPanel.add(page);
+		paginationPanel.add(next);
 		
 		JPanel imagePanel = new JPanel();
 		imagePanel.setLayout(new GridLayout(0,5));
@@ -126,6 +142,7 @@ implements ActionListener {
 
 		contentPane.add(buttonPanel, BorderLayout.PAGE_START);
 		contentPane.add(imagePanel, BorderLayout.CENTER);
+		contentPane.add(paginationPanel, BorderLayout.SOUTH);
 
 		contentPane.setVisible(true);
 		setVisible(true);
@@ -177,21 +194,39 @@ implements ActionListener {
 		}else if (e.getSource() == searchButton) {
 
 			try {
-				List<ImageData> results = new ArrayList<ImageData>();
-				// for now hard code the search types we want to use until we can add check box buttons to GUI
 				results = qp.processQuery(searchTypes, file);
-
-				for(int i = 0; i<is.getResultSize(); i++) {
-					imageLabels[i].setIcon(new ImageIcon(results.get(i).getImage()));
-					//System.out.println(results.get(i));
-				}
+		        currentPage = 0;
+				drawPage(imageLabels, results);
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} else if (e.getSource() == reportButton) {
 		    qp.generateReport(searchTypes);
+		} else if (e.getSource() == next){
+		    currentPage++;
+		    try {
+                drawPage(imageLabels, results);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+		} else if (e.getSource() == prev){
+		    if(currentPage > 0) {
+		        currentPage--;
+		    }
+            try {
+                drawPage(imageLabels, results);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
 		}
+	}
+	
+	private void drawPage(JLabel[] imageLabels, List<ImageData> results) throws IOException {
+        page.setText(String.format("%s-%s of %s", (currentPage*is.getResultSize()), (currentPage*is.getResultSize()) + 20, results.size()));
+        for(int i = 0; i<is.getResultSize(); i++) {
+            imageLabels[i].setIcon(new ImageIcon(results.get(i + (currentPage*is.getResultSize())).getImage()));
+        }
 	}
 
 	public static void main(String[] args) {

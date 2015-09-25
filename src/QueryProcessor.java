@@ -139,7 +139,9 @@ public class QueryProcessor {
         for(int i = 0; i < is.getResultSize(); i ++) {
             Set<String> categories = results.get(i).getCategories();
             Set<String> intersection = new HashSet<String>(categories);
-            intersection.retainAll(id.getCategories());
+            if(id.getCategories() != null) {
+                intersection.retainAll(id.getCategories());
+            }
             if (intersection.size() > 0) {
                 truePositives ++;
             }

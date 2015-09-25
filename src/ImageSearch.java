@@ -36,7 +36,7 @@ public class ImageSearch {
 		calculateSimilarities(searchTypes, queryImage);
 		List<ImageData> results = rankResults(searchTypes);
 		if (searchTypes.contains(SearchType.RELEVANCE)) {
-		   results = pseudoRelevanceFeedback(searchTypes, results); 
+		   results = pseudoRelevanceFeedback(searchTypes, results, queryImage); 
 		}
 		return results;
 	}
@@ -125,38 +125,26 @@ public class ImageSearch {
 	        }
 	        
 	        public int compare(ImageData a, ImageData b) {
-	            double rankA = pseudoRanks.get(a.getFilename());
-	            double rankB = pseudoRanks.get(b.getFilename());
-	            return rankA > rankB ? -1 : rankA == rankB ? 0 : 1;
+	            if (!pseudoRanks.isEmpty()) {
+    	            double rankA = pseudoRanks.get(a.getFilename());
+    	            double rankB = pseudoRanks.get(b.getFilename());
+    	            return rankA > rankB ? -1 : rankA == rankB ? 0 : 1;
+	            }
+	            return 0;
 	        }
 	        
 	   }
 	
-	private List<ImageData> pseudoRelevanceFeedback(List<SearchType> searchTypes, List<ImageData> results) throws IOException {
+	private List<ImageData> pseudoRelevanceFeedback(List<SearchType> searchTypes, List<ImageData> results, ImageData queryImage) throws IOException {
         searchTypes = new ArrayList<SearchType>(searchTypes);
         searchTypes.remove(SearchType.RELEVANCE);
-	    Map<String, Integer> count = new HashMap<String, Integer>();
-	    int highest = 0;
-        for (int i = 0; i < resultSize; i ++) {
-            Set<String> categories = results.get(i).getCategories();
-            for(String category: categories) {
-                if(!count.containsKey(category)) {
-                    count.put(category, 0);
-                }
-                count.put(category, count.get(category) + 1);
-                if (count.get(category) > highest){
-                    highest = count.get(category);
-                }
-            }
-        }
+        
         List<ImageData> feedback = new ArrayList<ImageData>();
-        for (String cat: count.keySet()) {
-            if(count.get(cat) == highest) {
-                for (int i = 0; i < resultSize; i ++) {
-                    if(results.get(i).getCategories().contains(cat)) {
-                        feedback.add(results.get(i));
-                    }
-                }
+        for (int i = 0; i < resultSize; i ++) {
+            Set<String> intersection = new HashSet<String>(queryImage.getCategories());
+            intersection.retainAll(results.get(i).getCategories());
+            if(intersection.size() > 0) {
+                feedback.add(results.get(i));
             }
         }
         Map<String, Double> pseudoRanks = new HashMap<String, Double>();
