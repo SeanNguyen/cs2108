@@ -75,7 +75,8 @@ public class Sift {
     }
 
     private static double[] getHist(ImageData queryImage) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder("python", generateScriptPath, "-c", codeBookFilePath, queryImage.getFilePath());
+    	String queryImagePath = String.format("\"%s\"", queryImage.getFilePath());
+        ProcessBuilder pb = new ProcessBuilder("python", generateScriptPath, "-c", codeBookFilePath, queryImagePath);
         Process p = pb.start();
         double hist[] = new double[words];
         try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {

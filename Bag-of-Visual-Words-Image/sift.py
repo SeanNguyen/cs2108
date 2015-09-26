@@ -35,9 +35,9 @@ def process_image(imagename, resultname='temp.sift', dense=False):
         
         #check if linux or windows 
         if os.name == "posix":
-            cmmd = ".." + os.path.sep + "FeatureExtractor" + os.path.sep + "Bag-of-Visual-Words-Image" + os.path.sep + "sift < " + imagename + " > " + resultname
+            cmmd = ".." + os.path.sep + "FeatureExtractor" + os.path.sep + "Bag-of-Visual-Words-Image" + os.path.sep + "sift < " + imagename + " > " + "\"" + resultname + "\""
         else:
-            cmmd = ".." + os.path.sep + "FeatureExtractor" + os.path.sep + "Bag-of-Visual-Words-Image" + os.path.sep + "siftWin32 < " + imagename + " > " + resultname
+            cmmd = ".." + os.path.sep + "FeatureExtractor" + os.path.sep + "Bag-of-Visual-Words-Image" + os.path.sep + "siftWin32 < " + imagename + " > " + "\"" + resultname + "\"" 
 
         # run extraction command
         returnvalue = subprocess.call(cmmd, shell=True)
