@@ -45,7 +45,7 @@ public class QueryProcessor {
                 if (dir.isDirectory()) {
                     File[] files = dir.listFiles();
                     for (int count = 0; count < files.length; count++) {
-                        if (!Utils.getExtension(files[count]).equals("sift")) {
+                        if (!Utils.getExtension(files[count]).equals("sift") && !Utils.getExtension(files[count]).equals("txt") ) {
                             queryCount++;
                             ImageData id = getQueryImage(files[count]);
                             List<ImageData> results = is.search(searchTypes, id, new ArrayList<ImageData>());
